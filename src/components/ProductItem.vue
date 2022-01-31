@@ -1,6 +1,6 @@
 <template>
 <div>
-     <a class="catalog__pic" href="#">
+     <a class="catalog__pic" href="#" @click.prevent="gotoPage('product', { id: product.id })">
               <img :src="product.image" srcset="img/radio@2x.jpg 2x" :alt="product.title">
             </a>
 
@@ -11,7 +11,7 @@
             </h3>
 
             <span class="catalog__price">
-              {{product.price}}₽
+              {{product.price | numberFormatter}}₽
             </span>
 
             <ul class="colors colors--black">
@@ -35,11 +35,20 @@
 </template>
 
 <script>
+import gotoPage from '@/helpers/gotoPage';
+import numberFormatter from '@/helpers/numberFormatter';
+
 export default {
   data() {
     return {
       color: '#73B6EA',
     };
+  },
+  filters: {
+    numberFormatter,
+  },
+  methods: {
+    gotoPage,
   },
   props: ['product'],
 };
