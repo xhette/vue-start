@@ -4,14 +4,14 @@
     <div class="content__top">
       <ul class="breadcrumbs">
         <li class="breadcrumbs__item">
-          <a class="breadcrumbs__link" href="#" @click.prevent="gotoPage('main')">
+          <router-link class="breadcrumbs__link"  :to="{name: 'main'}">
             Каталог
-          </a>
+          </router-link>
         </li>
         <li class="breadcrumbs__item">
-          <a class="breadcrumbs__link" href="#" @click.prevent="gotoPage('main')">
+          <router-link class="breadcrumbs__link"  :to="{name: 'main'}">
             {{category.title}}
-          </a>
+          </router-link>
         </li>
         <li class="breadcrumbs__item">
           <a class="breadcrumbs__link">
@@ -24,8 +24,7 @@
     <section class="item">
       <div class="item__pics pics">
         <div class="pics__wrapper">
-          <img width="570" height="570" :src="product.image"
-          srcset="img/phone-square@2x.jpg 2x" :alt="product.title">
+          <img width="570" height="570" :src="product.image" :alt="product.title">
         </div>
         <!--<ul class="pics__list">
           <li class="pics__item">
@@ -60,7 +59,7 @@
         <h2 class="item__title">
           {{product.title}}
         </h2>
-        <div class="item__form">
+        <div class="item__form" @submit.prevent="addToCart">
           <form class="form" action="#" method="POST">
             <b class="item__price">
               {{product.price | numberFormatter}} ₽
@@ -122,7 +121,7 @@
                   </svg>
                 </button>
 
-                <input type="text" value="1" name="count">
+                <input type="text" v-model.number="productAmount" name="count">
 
                 <button type="button" aria-label="Добавить один товар">
                   <svg width="12" height="12" fill="currentColor">
@@ -194,13 +193,18 @@ import categories from '@/data/categories';
 import numberFormatter from '@/helpers/numberFormatter';
 
 export default {
-  props: ['pageParams'],
+  data() {
+    return {
+      productAmount: 1,
+    };
+  },
+
   filters: {
     numberFormatter,
   },
   computed: {
     product() {
-      return products.find((product) => product.id === this.pageParams.id);
+      return products.find((product) => product.id === +this.$route.params.id);
     },
     category() {
       return categories.find((category) => category.id === this.product.categoryId);
@@ -208,6 +212,15 @@ export default {
   },
   methods: {
     gotoPage,
+    addToCart() {
+      this.$store.commit(
+        'addProductToCart',
+        {
+          productId: this.product.id,
+          amount: this.productAmount,
+        },
+      );
+    },
   },
 };
 </script>

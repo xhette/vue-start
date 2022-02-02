@@ -41,6 +41,11 @@ export default {
       products,
     };
   },
+  watch: {
+    filteredProducts() {
+      this.page = 1;
+    },
+  },
   computed: {
     filteredProducts() {
       let filteredProducts = products;
