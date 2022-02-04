@@ -115,7 +115,7 @@
 
             <div class="item__row">
               <div class="form__counter">
-                <button type="button" aria-label="Убрать один товар">
+                <button type="button" @click.prevent="productAmount--" aria-label="Убрать один товар">
                   <svg width="12" height="12" fill="currentColor">
                     <use xlink:href="#icon-minus"></use>
                   </svg>
@@ -123,7 +123,7 @@
 
                 <input type="text" v-model.number="productAmount" name="count">
 
-                <button type="button" aria-label="Добавить один товар">
+                <button type="button" @click.prevent="productAmount++" aria-label="Добавить один товар">
                   <svg width="12" height="12" fill="currentColor">
                     <use xlink:href="#icon-plus"></use>
                   </svg>
@@ -220,6 +220,11 @@ export default {
           amount: this.productAmount,
         },
       );
+    },
+  },
+  watch: {
+    productAmount() {
+      this.productAmount = Math.max(1, this.productAmount);
     },
   },
 };
