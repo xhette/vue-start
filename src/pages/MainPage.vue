@@ -14,7 +14,9 @@
       :priceTo.sync="filterPriceTo" :categoryId.sync="filterCategoryId"
       :colorValue.sync="filterColor"/>
       <section class="catalog">
-        <ProductList :products="productsOnPage"/>
+        <BasePreloader v-if="productsLoadStatus"/>
+        <BaseError v-else-if="productsLoadFailed"/>
+        <ProductList v-else :products="products"/>
         <BasePagination v-model="page" :count="productsCount" :per-page="productsPerPage"/>
       </section>
     </div>
@@ -22,13 +24,18 @@
 </template>
 
 <script>
-import products from '@/data/products';
+import axios from 'axios';
+import { API_BASE_URL } from '@/config';
 import ProductList from '@/components/ProductList.vue';
 import BasePagination from '@/components/BasePagination.vue';
 import ProductFilter from '@/components/ProductFilter.vue';
+import BasePreloader from '../components/BasePreloader.vue';
+import BaseError from '../components/BaseError.vue';
 
 export default {
-  components: { ProductList, BasePagination, ProductFilter },
+  components: {
+    ProductList, BasePagination, ProductFilter, BasePreloader, BaseError,
+  },
   data() {
     return {
       filterPriceFrom: 0,
@@ -37,41 +44,35 @@ export default {
       filterColor: '0',
 
       page: 1,
-      productsPerPage: 3,
-      products,
+      productsPerPage: 9,
+
+      productsData: null,
+      productsLoadStatus: false,
+      productsLoadFailed: false,
     };
   },
   watch: {
-    filteredProducts() {
-      this.page = 1;
+    page() {
+      this.loadProducts();
+    },
+
+    filterPriceFrom() {
+      this.loadProducts();
+    },
+
+    filterPriceTo() {
+      this.loadProducts();
+    },
+
+    filterCategoryId() {
+      this.loadProducts();
+    },
+
+    filterColor() {
+      this.loadProducts();
     },
   },
   computed: {
-    filteredProducts() {
-      let filteredProducts = products;
-
-      if (this.filterPriceFrom > 0) {
-        filteredProducts = filteredProducts
-          .filter((product) => product.price > this.filterPriceFrom);
-      }
-
-      if (this.filterPriceTo > 0) {
-        filteredProducts = filteredProducts
-          .filter((product) => product.price < this.filterPriceTo);
-      }
-
-      if (this.filterCategoryId > 0) {
-        filteredProducts = filteredProducts
-          .filter((product) => product.categoryId === this.filterCategoryId);
-      }
-
-      if (this.filterColor !== '0') {
-        filteredProducts = filteredProducts
-          .filter((product) => product.colors.includes(this.filterColor));
-      }
-
-      return filteredProducts;
-    },
 
     productsOnPage() {
       const offset = (this.page - 1) * this.productsPerPage;
@@ -79,8 +80,44 @@ export default {
       return this.filteredProducts.slice(offset, offset + this.productsPerPage);
     },
     productsCount() {
-      return this.filteredProducts.length;
+      return this.productsData ? this.productsData.pagination.total : 0;
     },
+
+    products() {
+      return this.productsData
+        ? this.productsData.items.map((product) => {
+          return {
+            ...product,
+            image: product.image.file.url,
+          };
+        }) : [];
+    },
+  },
+
+  methods: {
+    loadProducts() {
+      this.productsLoadStatus = true;
+      this.productsLoadFailed = false;
+      clearTimeout(this.loadProductsTimer);
+      this.loadProductsTimer = setTimeout(() => {
+        axios.get(`${API_BASE_URL}/api/products`, {
+          params: {
+            page: this.page,
+            limit: this.productsPerPage,
+            categoryId: this.filterCategoryId,
+            minPrice: this.filterPriceFrom,
+            maxPrice: this.filterPriceTo,
+            colorId: this.filterColor,
+          },
+        }).then((response) => { this.productsData = response.data; })
+          .catch(() => { this.productsLoadFailed = true; })
+          .then(() => { this.productsLoadStatus = false; });
+      }, 50000);
+    },
+  },
+
+  created() {
+    this.loadProducts();
   },
 };
 
