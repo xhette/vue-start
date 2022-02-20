@@ -111,10 +111,31 @@
   </div>
 </template>
 
+<style>
+  .content {
+    min-height: calc(100vh - 350px);
+    position:relative;
+  }
+</style>
+
 <script>
+import { mapActions, mapMutations } from 'vuex';
 import CartIndicator from '@/components/CartIndicator.vue';
 
 export default {
   components: { CartIndicator },
+
+  created() {
+    const userAccessKey = localStorage.getItem('userAccessKey');
+    if (userAccessKey) {
+      this.updateUserKey(userAccessKey);
+    }
+
+    this.loadCart();
+  },
+  methods: {
+    ...mapActions(['loadCart']),
+    ...mapMutations(['updateUserKey']),
+  },
 };
 </script>

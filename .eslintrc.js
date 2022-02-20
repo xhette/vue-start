@@ -17,5 +17,9 @@ module.exports = {
     'linebreak-style': 0,
     'arrow-body-style': 0,
     'import/prefer-default-export': 'off',
+    'object-shorthand': 'off',
+    'prefer-destructuring': 'off',
+    'consistent-return': 'off',
+    'no-param-reassign': 'off',
   },
 };

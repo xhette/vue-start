@@ -23,6 +23,18 @@
   </main>
 </template>
 
+<style>
+  #loading-icon {
+    animation: spin 2s linear infinite;
+  }
+
+  @keyframes spin {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+</style>
+
 <script>
 import axios from 'axios';
 import { API_BASE_URL } from '@/config';
@@ -112,7 +124,7 @@ export default {
         }).then((response) => { this.productsData = response.data; })
           .catch(() => { this.productsLoadFailed = true; })
           .then(() => { this.productsLoadStatus = false; });
-      }, 50000);
+      }, 500);
     },
   },
 

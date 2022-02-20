@@ -8,8 +8,9 @@
 <style>
 .load-info-container {
   display: flex;
-  align-self: center;
   align-items: center;
+  margin: 0 auto;
+  width: fit-content;
 }
 .dino-preloader {
   background: url('~@/assets/preloader-sprite.svg') no-repeat;
