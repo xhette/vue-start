@@ -212,13 +212,10 @@ export default {
     loadProduct() {
       this.productLoadStatus = true;
       this.productLoadFailed = false;
-      clearTimeout(this.loadProductTimer);
-      this.loadProductTimer = setTimeout(() => {
-        axios.get(`${API_BASE_URL}/api/products/${this.$route.params.id}`)
-          .then((response) => { this.productData = response.data; })
-          .catch(() => { this.productLoadFailed = true; })
-          .then(() => { this.productLoadStatus = false; });
-      }, 5000);
+      axios.get(`${API_BASE_URL}/api/products/${this.$route.params.id}`)
+        .then((response) => { this.productData = response.data; })
+        .catch(() => { this.productLoadFailed = true; })
+        .then(() => { this.productLoadStatus = false; });
     },
 
     addToCart() {

@@ -15,8 +15,21 @@ export default new Vuex.Store({
     cartProductsLoad: false,
     cartProductsLoadFailed: false,
     cartAmountLoad: false,
+
+    orderInfo: null,
+    orderProductsLoad: false,
+    orderProductsLoadFailed: false,
   },
   mutations: {
+    updateOrderInfo(state, order) {
+      state.orderInfo = order;
+    },
+
+    resetCart(state) {
+      state.cartProducts = [];
+      state.cartProductsData = [];
+    },
+
     updateProductCartAmount(state, { productId, amount }) {
       const item = state.cartProducts.find((product) => product.productId === productId);
 
@@ -47,6 +60,14 @@ export default new Vuex.Store({
     },
   },
   getters: {
+    orderInfo(state) {
+      return state.orderInfo;
+    },
+
+    orderProductsAmount(state, getters) {
+      return getters.orderInfo.basket.items.reduce((acc, item) => (item.quantity + acc), 0);
+    },
+
     cartDetailsProducts(state) {
       return state.cartProducts.map((item) => {
         const product = state.cartProductsData.find((p) => p.product.id === item.productId).product;
@@ -58,6 +79,14 @@ export default new Vuex.Store({
           },
         };
       });
+    },
+
+    orderLoadStatus(state) {
+      return state.orderProductsLoad;
+    },
+
+    orderLoadFailed(state) {
+      return state.orderProductsLoadFailed;
     },
 
     cartTotalPrice(state, getters) {
@@ -82,9 +111,27 @@ export default new Vuex.Store({
   },
 
   actions: {
+    loadOrderInfo(context, orderId) {
+      context.state.orderLoadStatus = true;
+      return axios.get(`${API_BASE_URL}/api/orders/${orderId}`, {
+        params: {
+          userAccessKey: context.state.userAccessKey,
+        },
+      })
+        .then((response) => {
+          context.commit('updateOrderInfo', response.data);
+        })
+        .catch(() => {
+          context.state.orderProductsLoadFailed = true;
+        })
+        .finally(() => {
+          context.state.orderProductsLoad = false;
+        });
+    },
+
     loadCart(context) {
       context.state.cartProductsLoad = true;
-      return (new Promise((resolve) => setTimeout(resolve, 2000)))
+      return (new Promise((resolve) => setTimeout(resolve, 2)))
         .then(() => {
           return axios.get(`${API_BASE_URL}/api/baskets`, {
             params: {
@@ -112,7 +159,7 @@ export default new Vuex.Store({
       context.state.cartProductsLoad = true;
       context.state.cartAmountLoad = true;
 
-      return (new Promise((resolve) => setTimeout(resolve, 2000)))
+      return (new Promise((resolve) => setTimeout(resolve, 2)))
         .then(() => {
           return axios.post(`${API_BASE_URL}/api/baskets/products`, {
             productId: productId,
@@ -141,7 +188,7 @@ export default new Vuex.Store({
         return;
       }
 
-      return (new Promise((resolve) => setTimeout(resolve, 2000)))
+      return (new Promise((resolve) => setTimeout(resolve, 2)))
         .then(() => {
           context.commit('updateProductCartAmount', { productId: productId, amount: productQuantity });
           return axios.put(`${API_BASE_URL}/api/baskets/products`, {
